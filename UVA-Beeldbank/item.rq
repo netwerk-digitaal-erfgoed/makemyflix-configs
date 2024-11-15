@@ -1,0 +1,32 @@
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX schema: <https://schema.org/>
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?heritageObject 
+        ?name 
+        (GROUP_CONCAT(DISTINCT ?descr_per_line;separator=" ") as ?description)
+        (GROUP_CONCAT(DISTINCT ?creator; SEPARATOR='; ') AS ?creators) 
+        (GROUP_CONCAT(DISTINCT ?creatorName; SEPARATOR='; ') AS ?creatorNames)
+        (GROUP_CONCAT(DISTINCT ?date; SEPARATOR='; ') AS ?dateCreated)
+        (GROUP_CONCAT(DISTINCT ?publisher; SEPARATOR='; ') AS ?publisherName)
+        ?imageURI
+        ?imageLicenseURI 
+        ?imageLicenseName
+WHERE { 
+  BIND(<_CATEGORYID_> AS ?type)
+  ?heritageObject a ?type ;
+    dc:title ?name ;
+    dc:description ?descr_per_line ;
+    foaf:depiction ?imageURI ;
+    dc:date ?date ;
+    dc:publisher ?publisher ;
+    dc:creator|dc:contributor ?creator .
+ SERVICE <https://data.bibliotheken.nl/sparql> {
+   ?creator rdfs:label ?creatorName
+ }
+ BIND(URI("https://uba.uva.nl/en/support/open-data/licences/licences.html") as ?imageLicenseURI)
+ BIND("UVA Library Open Data License" as ?imageLicenseName)
+}
+OFFSET _OFFSET_
+LIMIT _LIMIT_

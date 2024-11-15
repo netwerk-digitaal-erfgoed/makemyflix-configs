@@ -1,0 +1,1 @@
+https://api.lod.uba.uva.nl/datasets/UB-UVA/Beeldbank/services/virtuoso/sparql

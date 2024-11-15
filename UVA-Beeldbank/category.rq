@@ -1,0 +1,38 @@
+PREFIX schema: <https://schema.org/>
+SELECT DISTINCT (COUNT(?heritageObject) AS ?numberOfHeritageObjects) ?id ?name 
+{
+  # create categories based on the rdf:types
+  ?heritageObject a ?id .
+
+  # limit the results to the types below
+  VALUES ?id {
+    schema:Book schema:SheetMusic schema:Manuscript schema:Map 
+    <http://purl.org/dc/dcmitype/PhysicalObject> 
+    <http://purl.org/dc/dcmitype/Image>
+  }
+
+  # add a human friendly name for each type
+  BIND (
+    IF(?id = schema:Book, "Boek",
+      IF(?id = schema:SheetMusic, "Bladmuziek",
+        IF(?id = schema:Manuscript, "Manuscript",
+          IF(?id = schema:Map, "Kaart",
+            IF(?id = <http://purl.org/dc/dcmitype/PhysicalObject>, "Museaal object",
+              IF(?id = <http://purl.org/dc/dcmitype/Image>, "Foto","onbekend"
+              )
+            )
+          )    
+        )
+      )
+    ) AS ?name
+  )
+} 
+
+# Group is needed for the COUNT in the SELECT DISTINCT 
+GROUP BY ?id ?name 
+
+# Sort on the type name for the UI
+ORDER BY ?name
+
+# the LIMIT is set trough the code
+LIMIT _LIMIT_
