@@ -5,16 +5,20 @@ prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
 SELECT ?heritageObject 
         ?name 
+        # glue multiple results together to create one field per ?heritageObject
         (GROUP_CONCAT(DISTINCT ?descr_per_line;separator=" ") as ?description)
         (GROUP_CONCAT(DISTINCT ?creator; SEPARATOR='; ') AS ?creators) 
         (GROUP_CONCAT(DISTINCT ?creatorName; SEPARATOR='; ') AS ?creatorNames)
         (GROUP_CONCAT(DISTINCT ?date; SEPARATOR='; ') AS ?dateCreated)
         (GROUP_CONCAT(DISTINCT ?publisher; SEPARATOR='; ') AS ?publisherName)
+        ?publisherURI
         ?imageURI
         ?imageLicenseURI 
         ?imageLicenseName
 WHERE { 
-  BIND(<_CATEGORYID_> AS ?type)
+
+  # replace _CATEGORYID_ when testing
+  BIND(<_CATEGORYID_> as ?type)
   ?heritageObject a ?type ;
     dc:title ?name ;
     dc:description ?descr_per_line ;
@@ -22,10 +26,19 @@ WHERE {
     dc:date ?date ;
     dc:publisher ?publisher ;
     dc:creator|dc:contributor ?creator .
- # if ?creator is an URI we create a creatorName based on the last part of the URI
+
+ # when creator is a URI a label is generated with the value of the last part of the URI, normally the identifier
+ # this hack is needed because makemyflix requires a name and a URI for creator 
  BIND(IF(ISURI(?creator),REPLACE(STR(?creator), ".*://.*/(.*?)", "$1"),?creator) as ?creatorName)
+
+ # publisher values are available as strings, so a fake URI is generated
+ BIND("https://uba.uva.nl/" as ?publisherURI)
+
+ # create the license at collection level
  BIND(URI("https://uba.uva.nl/en/support/open-data/licences/licences.html") as ?imageLicenseURI)
  BIND("UVA Library Open Data License" as ?imageLicenseName)
+ 
 }
+# replace _OFFSET_ and _LIMIT_ when testing
 OFFSET _OFFSET_
 LIMIT _LIMIT_
