@@ -22,9 +22,8 @@ WHERE {
     dc:date ?date ;
     dc:publisher ?publisher ;
     dc:creator|dc:contributor ?creator .
- SERVICE <https://data.bibliotheken.nl/sparql> {
-   ?creator rdfs:label ?creatorName
- }
+ # if ?creator is an URI we create a creatorName based on the last part of the URI
+ BIND(IF(ISURI(?creator),REPLACE(STR(?creator), ".*://.*/(.*?)", "$1"),?creator) as ?creatorName)
  BIND(URI("https://uba.uva.nl/en/support/open-data/licences/licences.html") as ?imageLicenseURI)
  BIND("UVA Library Open Data License" as ?imageLicenseName)
 }
